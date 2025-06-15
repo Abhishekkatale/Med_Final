@@ -12,7 +12,7 @@ const ProfileCard = () => {
   // Fallback profile data if API returns empty
   const profileData = profile || {
     name: "Dr. John Wilson",
-    initials: "AJ",
+    initials: "JW",
     title: "Cardiologist",
     organization: "Memorial Hospital",
     profileCompletion: 65,

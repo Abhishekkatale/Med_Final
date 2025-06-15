@@ -26,7 +26,7 @@ const LoginPage: React.FC = () => {
       login(data.token, data.user);
       toast.success('Login Successful!', { position: 'top-center' });
 
-      setTimeout(() => navigate('/'), 1500); // Delay to show toast
+      setTimeout(() => navigate('/dashboard'), 1500); // Delay to show toast
     } catch (err) {
       setError((err as Error).message);
       toast.error((err as Error).message, { position: 'top-center' });

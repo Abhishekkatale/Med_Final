@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
-import { SidebarLink, ColleagueDisplay } from "@/lib/types";
+import { SidebarLink } from "@/lib/types";
 import { User } from "@shared/schema";
 
 interface SidebarProps {
@@ -14,12 +14,8 @@ const Sidebar = ({ isOpen }: SidebarProps) => {
     queryKey: ["/api/users/current"],
   });
 
-  const { data: colleagues } = useQuery<ColleagueDisplay[]>({
-    queryKey: ["/api/users/colleagues"],
-  });
-
   const navLinks: SidebarLink[] = [
-    { href: "/", label: "Dashboard", icon: "dashboard", active: location === "/" },
+    { href: "/dashboard", label: "Dashboard", icon: "dashboard", active: location === "/" },
     { href: "/knowledge-hub", label: "Knowledge Hub", icon: "forum", active: location === "/knowledge-hub" },
     { href: "/documents", label: "Documents", icon: "folder_shared", active: location === "/documents" },
     { href: "/directory", label: "Directory", icon: "people", active: location === "/directory" },
@@ -50,39 +46,19 @@ const Sidebar = ({ isOpen }: SidebarProps) => {
               </Link>
             </div>
           ))}
-          
-          {colleagues && colleagues.length > 0 && (
-            <div className="pt-5">
-              <div className="px-3 mb-2 text-xs font-semibold text-text-muted dark:text-slate-400 uppercase tracking-wider">
-                My Network
-              </div>
-              {colleagues.map((colleague) => (
-                <div key={colleague.id} className="w-full">
-                  <Link href={`/directory/${colleague.id}`}>
-                    <div className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-text-primary dark:text-white hover:bg-gray-100 dark:hover:bg-slate-800 cursor-pointer">
-                      <div className={`w-6 h-6 rounded-full ${colleague.colorClass} flex items-center justify-center mr-3`}>
-                        <span className="text-xs font-medium">{colleague.initials}</span>
-                      </div>
-                      <span>{colleague.name}</span>
-                    </div>
-                  </Link>
-                </div>
-              ))}
-            </div>
-          )}
         </nav>
         
         {/* User profile */}
         <div className="px-4 py-4 border-t border-border dark:border-slate-700">
           <div className="flex items-center">
             <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-medium">
-              <span>{currentUser?.initials || "..."}</span>
+              <span>{currentUser?.initials || "JW"}</span>
             </div>
             <div className="ml-3">
               <p className="text-sm font-medium dark:text-white">{currentUser?.name || "Loading..."}</p>
-              <p className="text-xs text-text-secondary dark:text-slate-400">{currentUser?.title || "..."}</p>
+              <p className="text-xs text-text-secondary dark:text-slate-slate-400">{currentUser?.title || "Cardiologist"}</p>
             </div>
-            <Link href="/settings">
+            <Link href="/profile">
               <div className="ml-auto p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 cursor-pointer">
                 <span className="material-icons text-text-secondary dark:text-slate-400 text-xl">settings</span>
               </div>

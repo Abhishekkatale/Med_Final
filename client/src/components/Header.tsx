@@ -50,15 +50,11 @@ const Header = ({ title }: HeaderProps) => {
               ) : (
                 <>
                   <Link href="/login">
-                    <a className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-md">
+                    <a className="px-4 py-2 text-sm font-medium text-white dark:text-gray-200 bg-blue-700 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-md">
                       Login
                     </a>
                   </Link>
-                  <Link href="/signup">
-                    <a className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-md">
-                      Signup
-                    </a>
-                  </Link>
+                 
                 </>
               )}
             </>
