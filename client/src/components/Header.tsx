@@ -31,7 +31,7 @@ const Header = ({ title }: HeaderProps) => {
           <h1 className="text-xl font-semibold text-text-primary dark:text-white">{title}</h1>
           {isAuthenticated && user && (
             <p className="text-sm text-text-secondary dark:text-slate-300">
-              Welcome back, {user.name?.split(' ')[0]}
+              Welcome back, Dr. Prakash Varma
             </p>
           )}
         </div>

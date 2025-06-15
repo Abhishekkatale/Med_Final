@@ -11,8 +11,8 @@ const ProfileCard = () => {
 
   // Fallback profile data if API returns empty
   const profileData = profile || {
-    name: "Dr. John Wilson",
-    initials: "JW",
+    name: "Dr. Prakash Varma",
+    initials: "PV",
     title: "Cardiologist",
     organization: "Memorial Hospital",
     profileCompletion: 65,
@@ -93,11 +93,7 @@ const ProfileCard = () => {
           </div>
         </div>
         
-        <Link href="/profile">
-          <Button className="w-full py-2.5 rounded-md bg-primary text-white font-medium hover:bg-primary/90">
-            View Full Profile
-          </Button>
-        </Link>
+       
       </div>
     </div>
   );

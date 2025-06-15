@@ -1,10 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import StatsCard from "@/components/dashboard/StatsCard";
 import MedicalInsights from "@/components/dashboard/MedicalInsights";
-import RecentDocuments from "@/components/dashboard/RecentDocuments";
 import ProfileCard from "@/components/dashboard/ProfileCard";
 import PeerSuggestions from "@/components/dashboard/PeerSuggestions";
-import UpcomingEvents from "@/components/dashboard/UpcomingEvents";
 import TrendingNow from "@/components/dashboard/TrendingNow";
 import RecentActivities from "@/components/dashboard/RecentActivities";
 import Groups from "@/components/dashboard/Groups";
@@ -49,7 +47,6 @@ const Dashboard = () => {
         <div className="xl:col-span-2 space-y-6 order-1 xl:order-2">
           <PostCreator />
           <MedicalInsights />
-          <RecentDocuments />
         </div>
         
         {/* Right sidebar - trending and events */}
@@ -57,7 +54,6 @@ const Dashboard = () => {
           <TrendingNow />
           <PuzzlesSection />
           <PeerSuggestions />
-          <UpcomingEvents />
         </div>
       </div>
     </div>

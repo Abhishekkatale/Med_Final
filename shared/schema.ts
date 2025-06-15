@@ -3,7 +3,32 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Enums
-export const UserRole = z.enum(['admin', 'superadmin', 'patient']);
+export const UserRole = z.enum([
+  // System Roles
+  'admin',
+  'superadmin',
+  'patient',
+  'doctor',
+  'nurse',
+  'student',
+  'pharmacist',
+  'therapist',
+  'technician',
+  'receptionist',
+  'lab_assistant',
+  'radiologist',
+ 
+  // Medical Specialties
+  'cardiologist',                 // Heart specialist
+  'neurologist',                  // Brain and nervous system
+  'oncologist',                   // Cancer treatment
+  'dermatologist',                // Skin specialist
+  'endocrinologist',              // Hormones and metabolism
+  'gastroenterologist',           // Digestive system
+  'hematologist',                 // Blood disorders
+  'infectious_disease_specialist',
+  'nephrologist',                 // Kidney specialist
+]);
 
 // User schema
 export const users = pgTable("users", {

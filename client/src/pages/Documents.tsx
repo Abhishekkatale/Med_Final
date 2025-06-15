@@ -1,322 +1,326 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { DocumentWithSharing } from "@/lib/types";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User } from "@shared/schema";
-import { apiRequest } from "@/lib/queryClient"; // Import apiRequest
-import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
-const Documents = () => {
-  const queryClient = useQueryClient();
-  const { token } = useAuth(); // Get token
+const HealthcareNews = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState("all");
-  const [openShareDialog, setOpenShareDialog] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState<number | null>(null);
-  const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+  const [activeCategory, setActiveCategory] = useState("all");
 
-  const { data: documents, isLoading } = useQuery<DocumentWithSharing[]>({
-    queryKey: ["/api/documents", activeTab, searchTerm],
-  });
-
-  const { data: users } = useQuery<User[]>({
-    queryKey: ["/api/users"],
-  });
-
-  const uploadMutation = useMutation({
-    mutationFn: async (file: File) => {
-      const formData = new FormData();
-      formData.append("file", file);
-      
-      // For FormData, fetch needs to set Content-Type to multipart/form-data automatically.
-      // We only add Authorization header. apiRequest might try to set Content-Type if data is present.
-      // So, we might need a direct fetch here or ensure apiRequest handles FormData correctly.
-      // Let's try direct fetch for FormData upload.
-      const headers: HeadersInit = {};
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      const response = await fetch("/api/documents/upload", {
-        method: "POST",
-        body: formData,
-        headers, // Pass only Authorization, let browser set Content-Type for FormData
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.text();
-        throw new Error(response.status + ": " + (errorData || "Upload failed"));
-      }
-      
-      return response.json();
+  // Mock healthcare news data - you can replace this with real API data
+  const newsData = [
+    {
+      id: 1,
+      title: "Revolutionary Gene Therapy Shows Promise for Rare Disease Treatment",
+      summary: "New clinical trials demonstrate unprecedented success rates in treating genetic disorders using advanced gene editing techniques.",
+      category: "research",
+      source: "BBC Health",
+      sourceUrl: "https://www.bbc.com/news/health",
+      publishedAt: "2 hours ago",
+      readTime: "4 min read",
+      image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=200&fit=crop",
+      tags: ["Gene Therapy", "Clinical Trials", "Rare Diseases"],
+      trending: true
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+    {
+      id: 2,
+      title: "AI-Powered Diagnostic Tool Reduces Medical Errors by 40%",
+      summary: "Machine learning algorithms are helping doctors make more accurate diagnoses, particularly in radiology and pathology.",
+      category: "technology",
+      source: "Reuters Health",
+      sourceUrl: "https://www.reuters.com/business/healthcare-pharmaceuticals/",
+      publishedAt: "4 hours ago",
+      readTime: "3 min read",
+      image: "https://www.scnsoft.com/healthcare/artificial-intelligence-medical-diagnosis/architecture.png",
+      tags: ["Artificial Intelligence", "Diagnostics", "Medical Technology"],
+      trending: false
     },
-  });
-
-  const shareMutation = useMutation({
-    mutationFn: async ({ documentId, userIds }: { documentId: number; userIds: number[] }) => {
-      // Use apiRequest which handles token
-      const response = await apiRequest("POST", `/api/documents/${documentId}/share`, { userIds }, token);
-      return response.json();
+    {
+      id: 3,
+      title: "Global Mental Health Initiative Launches in 50 Countries",
+      summary: "WHO announces comprehensive program to address rising mental health challenges worldwide, focusing on accessibility and prevention.",
+      category: "global-health",
+      source: "CNN Health",
+      sourceUrl: "https://www.cnn.com/health",
+      publishedAt: "6 hours ago",
+      readTime: "5 min read",
+      image: "https://images.unsplash.com/photo-1544027993-37dbfe43562a?w=400&h=200&fit=crop",
+      tags: ["Mental Health", "WHO", "Global Initiative"],
+      trending: true
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
-      setOpenShareDialog(false);
-      setSelectedDocument(null);
-      setSelectedUsers([]);
+    {
+      id: 4,
+      title: "Breakthrough in Cancer Immunotherapy Shows 85% Success Rate",
+      summary: "New personalized treatment approach demonstrates remarkable results in late-stage cancer patients across multiple cancer types.",
+      category: "research",
+      source: "Nature Medicine",
+      sourceUrl: "https://www.nature.com/nm/",
+      publishedAt: "8 hours ago",
+      readTime: "6 min read",
+      image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=200&fit=crop",
+      tags: ["Cancer", "Immunotherapy", "Clinical Research"],
+      trending: true
     },
-  });
-
-  const handleUpload = () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx";
-    input.onchange = (e: Event) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        uploadMutation.mutate(file);
-      }
-    };
-    input.click();
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Search will be triggered by setting the state, which will cause the query to refetch
-  };
-
-  const openShare = (documentId: number) => {
-    setSelectedDocument(documentId);
-    setOpenShareDialog(true);
-  };
-
-  const handleShare = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!selectedDocument || selectedUsers.length === 0) {
-      alert("Please select at least one user to share with");
-      return;
+    {
+      id: 5,
+      title: "Telemedicine Usage Stabilizes at 38x Pre-Pandemic Levels",
+      summary: "Healthcare systems worldwide report sustained high adoption of virtual consultations, transforming patient care delivery.",
+      category: "digital-health",
+      source: "Healthcare IT News",
+      sourceUrl: "https://www.healthcareitnews.com/",
+      publishedAt: "12 hours ago",
+      readTime: "4 min read",
+      image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&h=200&fit=crop",
+      tags: ["Telemedicine", "Digital Health", "Healthcare Delivery"],
+      trending: false
+    },
+    {
+      id: 6,
+      title: "New Alzheimer's Drug Shows Promise in Slowing Cognitive Decline",
+      summary: "Phase III trials reveal significant reduction in disease progression, offering hope for millions of patients and families.",
+      category: "research",
+      source: "Medical News Today",
+      sourceUrl: "https://www.medicalnewstoday.com/",
+      publishedAt: "1 day ago",
+      readTime: "7 min read",
+      image: "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=400&h=200&fit=crop",
+      tags: ["Alzheimer's", "Neurology", "Drug Development"],
+      trending: false
     }
-    
-    shareMutation.mutate({
-      documentId: selectedDocument,
-      userIds: selectedUsers,
-    });
+  ];
+
+  const categories = [
+    { id: "all", name: "All News", icon: "public" },
+    { id: "research", name: "Research", icon: "science" },
+    { id: "technology", name: "Technology", icon: "computer" },
+    { id: "global-health", name: "Global Health", icon: "language" },
+    { id: "digital-health", name: "Digital Health", icon: "smartphone" }
+  ];
+
+  const filteredNews = newsData.filter(article => {
+    const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         article.summary.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         article.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesCategory = activeCategory === "all" || article.category === activeCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const trendingNews = newsData.filter(article => article.trending);
+
+  const handleNewsClick = (sourceUrl) => {
+    window.open(sourceUrl, '_blank', 'noopener,noreferrer');
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Documents</h1>
-          <p className="text-gray-600">Secure document sharing and management</p>
+    <div className="container mx-auto p-6 max-w-7xl">
+      {/* Header Section */}
+      <div className="mb-8">
+        <div className="flex items-center mb-4">
+          <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-green-500 rounded-xl flex items-center justify-center mr-4">
+            <span className="material-icons text-white text-2xl">medical_information</span>
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-1">Healthcare News</h1>
+            <p className="text-gray-600">Stay updated with the latest medical breakthroughs and health innovations</p>
+          </div>
         </div>
-        
-        <Button 
-          className="mt-4 sm:mt-0 bg-primary text-white hover:bg-primary/90"
-          onClick={handleUpload}
-          disabled={uploadMutation.isPending}
-        >
-          <span className="material-icons mr-2 text-sm">
-            cloud_upload
-          </span>
-          {uploadMutation.isPending ? "Uploading..." : "Upload Document"}
-        </Button>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-6">
-        <aside className="w-full md:w-64 flex-shrink-0">
-          <div className="bg-white rounded-lg shadow-card p-4 mb-6">
-            <form onSubmit={handleSearch}>
+      {/* Search and Filters */}
+      <div className="flex flex-col lg:flex-row gap-6 mb-8">
+        <div className="lg:w-80 flex-shrink-0">
+          <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-lg">
+                <span className="material-icons mr-2 text-blue-600">search</span>
+                Search & Filter
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Search Input */}
               <div className="relative">
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                   <span className="material-icons text-gray-400 text-lg">search</span>
                 </span>
                 <Input 
                   type="text" 
-                  placeholder="Search documents..." 
-                  className="pl-10" 
+                  placeholder="Search healthcare news..." 
+                  className="pl-10 border-2 focus:border-blue-500 transition-colors" 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-            </form>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-card">
-            <div className="p-4 border-b">
-              <h2 className="font-semibold">Filters</h2>
-            </div>
-            <div className="p-4">
-              <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid grid-cols-1 mb-4">
-                  <TabsTrigger value="all">All Documents</TabsTrigger>
-                </TabsList>
-                
-                <div className="space-y-2 mt-4">
-                  <h3 className="text-sm font-medium text-gray-600 mb-2">Document Type</h3>
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id="type-pdf"
-                      className="rounded text-primary mr-2"
-                      checked={activeTab === "pdf"}
-                      onChange={() => setActiveTab(activeTab === "pdf" ? "all" : "pdf")}
-                    />
-                    <label htmlFor="type-pdf" className="text-sm">PDF</label>
-                  </div>
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id="type-excel"
-                      className="rounded text-primary mr-2"
-                      checked={activeTab === "excel"}
-                      onChange={() => setActiveTab(activeTab === "excel" ? "all" : "excel")}
-                    />
-                    <label htmlFor="type-excel" className="text-sm">Excel</label>
-                  </div>
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id="type-ppt"
-                      className="rounded text-primary mr-2"
-                      checked={activeTab === "ppt"}
-                      onChange={() => setActiveTab(activeTab === "ppt" ? "all" : "ppt")}
-                    />
-                    <label htmlFor="type-ppt" className="text-sm">PowerPoint</label>
-                  </div>
+
+              {/* Categories */}
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-3">Categories</h3>
+                <div className="space-y-2">
+                  {categories.map((category) => (
+                    <button
+                      key={category.id}
+                      onClick={() => setActiveCategory(category.id)}
+                      className={`w-full flex items-center p-3 rounded-lg transition-all duration-200 ${
+                        activeCategory === category.id
+                          ? 'bg-blue-500 text-white shadow-md transform scale-105'
+                          : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200'
+                      }`}
+                    >
+                      <span className="material-icons mr-3 text-sm">{category.icon}</span>
+                      <span className="font-medium">{category.name}</span>
+                    </button>
+                  ))}
                 </div>
-                
-                <div className="space-y-2 mt-6">
-                  <h3 className="text-sm font-medium text-gray-600 mb-2">Sharing</h3>
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id="shared-by-me"
-                      className="rounded text-primary mr-2"
-                      checked={activeTab === "shared-by-me"}
-                      onChange={() => setActiveTab(activeTab === "shared-by-me" ? "all" : "shared-by-me")}
-                    />
-                    <label htmlFor="shared-by-me" className="text-sm">Shared by me</label>
-                  </div>
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id="shared-with-me"
-                      className="rounded text-primary mr-2"
-                      checked={activeTab === "shared-with-me"}
-                      onChange={() => setActiveTab(activeTab === "shared-with-me" ? "all" : "shared-with-me")}
-                    />
-                    <label htmlFor="shared-with-me" className="text-sm">Shared with me</label>
-                  </div>
+              </div>
+
+              {/* Trending Section */}
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
+                  <span className="material-icons mr-2 text-red-500">trending_up</span>
+                  Trending Now
+                </h3>
+                <div className="space-y-2">
+                  {trendingNews.slice(0, 3).map((article) => (
+                    <div 
+                      key={article.id}
+                      onClick={() => handleNewsClick(article.sourceUrl)}
+                      className="p-3 bg-white rounded-lg border border-gray-200 hover:border-red-300 hover:shadow-md transition-all duration-200 cursor-pointer"
+                    >
+                      <h4 className="font-medium text-sm text-gray-800 line-clamp-2 mb-1">
+                        {article.title}
+                      </h4>
+                      <p className="text-xs text-gray-500">{article.source} • {article.publishedAt}</p>
+                    </div>
+                  ))}
                 </div>
-              </Tabs>
-            </div>
-          </div>
-        </aside>
-        
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Main Content */}
         <div className="flex-1">
-          <Card>
-            <CardHeader className="border-b">
-              <CardTitle>Your Documents</CardTitle>
+          <Card className="shadow-lg border-0">
+            <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-green-50">
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-xl text-gray-800">
+                  Latest Healthcare News ({filteredNews.length})
+                </CardTitle>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => window.location.reload()}
+                  className="border-blue-500 text-blue-600 hover:bg-blue-50"
+                >
+                  <span className="material-icons mr-1 text-sm">refresh</span>
+                  Refresh
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="p-0">
-              {isLoading ? (
-                <div className="p-4 animate-pulse">
-                  <div className="h-10 bg-gray-200 rounded mb-4"></div>
-                  <div className="h-10 bg-gray-200 rounded mb-4"></div>
-                  <div className="h-10 bg-gray-200 rounded"></div>
-                </div>
-              ) : documents && documents.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full">
-                    <thead>
-                      <tr className="bg-gray-50">
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">Name</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">Type</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">Shared With</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">Updated</th>
-                        <th className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wider">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                      {documents.map((doc) => (
-                        <tr key={doc.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <span className={`material-icons text-${doc.typeLabel.color} mr-2`}>{doc.icon}</span>
-                              <span className="text-sm font-medium text-text-primary">{doc.filename}</span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            <span className={`px-2 py-1 text-xs rounded-full bg-${doc.typeLabel.color}/10 text-${doc.typeLabel.color}`}>
-                              {doc.typeLabel.name}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            {doc.sharedWith.length > 0 ? (
-                              <div className="flex -space-x-2">
-                                {doc.sharedWith.map((user) => (
-                                  <div 
-                                    key={user.id} 
-                                    className={`w-6 h-6 rounded-full border-2 border-white ${user.colorClass} flex items-center justify-center`}
+              {filteredNews.length > 0 ? (
+                <div className="divide-y divide-gray-100">
+                  {filteredNews.map((article, index) => (
+                    <article 
+                      key={article.id}
+                      onClick={() => handleNewsClick(article.sourceUrl)}
+                      className={`p-6 hover:bg-gray-50 transition-all duration-200 cursor-pointer group ${
+                        index === 0 ? 'bg-gradient-to-r from-blue-50/30 to-green-50/30' : ''
+                      }`}
+                    >
+                      <div className="flex flex-col lg:flex-row gap-4">
+                        <div className="lg:w-48 flex-shrink-0">
+                          <img 
+                            src={article.image} 
+                            alt={article.title}
+                            className="w-full h-32 lg:h-24 object-cover rounded-lg shadow-sm group-hover:shadow-md transition-shadow"
+                          />
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                {article.trending && (
+                                  <Badge className="bg-red-500 text-white text-xs px-2 py-1">
+                                    <span className="material-icons mr-1 text-xs">trending_up</span>
+                                    Trending
+                                  </Badge>
+                                )}
+                                <Badge variant="outline" className="text-xs">
+                                  {categories.find(c => c.id === article.category)?.name || 'News'}
+                                </Badge>
+                              </div>
+                              
+                              <h2 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
+                                {article.title}
+                              </h2>
+                              
+                              <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                                {article.summary}
+                              </p>
+                              
+                              <div className="flex flex-wrap gap-2 mb-3">
+                                {article.tags.map((tag, tagIndex) => (
+                                  <span 
+                                    key={tagIndex}
+                                    className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
                                   >
-                                    <span className="text-xs font-medium">{user.initials}</span>
-                                  </div>
+                                    {tag}
+                                  </span>
                                 ))}
                               </div>
-                            ) : (
-                              <span className="text-xs text-gray-500">Not shared</span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-text-secondary">
-                            {doc.timeAgo}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-right">
-                            <a 
-                              href={`/api/documents/${doc.id}/download`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="p-1.5 rounded-md hover:bg-gray-100 inline-block"
-                            >
-                              <span className="material-icons text-text-secondary text-sm">download</span>
-                            </a>
-                            <button 
-                              className="p-1.5 rounded-md hover:bg-gray-100"
-                              onClick={() => openShare(doc.id)}
-                            >
-                              <span className="material-icons text-text-secondary text-sm">share</span>
-                            </button>
-                            <button className="p-1.5 rounded-md hover:bg-gray-100">
-                              <span className="material-icons text-text-secondary text-sm">more_vert</span>
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                            </div>
+                            
+                            <div className="ml-4 flex-shrink-0">
+                              <span className="material-icons text-gray-400 group-hover:text-blue-500 transition-colors">
+                                open_in_new
+                              </span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between text-sm text-gray-500">
+                            <div className="flex items-center gap-4">
+                              <span className="flex items-center">
+                                <span className="material-icons mr-1 text-xs">language</span>
+                                {article.source}
+                              </span>
+                              <span className="flex items-center">
+                                <span className="material-icons mr-1 text-xs">schedule</span>
+                                {article.publishedAt}
+                              </span>
+                              <span className="flex items-center">
+                                <span className="material-icons mr-1 text-xs">timer</span>
+                                {article.readTime}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </article>
+                  ))}
                 </div>
               ) : (
                 <div className="text-center py-16">
-                  <span className="material-icons text-4xl text-gray-300 mb-4">description</span>
-                  <h3 className="text-lg font-medium text-gray-700 mb-2">No documents found</h3>
+                  <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="material-icons text-4xl text-gray-400">search_off</span>
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-700 mb-2">No news found</h3>
                   <p className="text-gray-500 mb-6">
                     {searchTerm 
                       ? `No results found for "${searchTerm}"`
-                      : "Upload a document to get started"}
+                      : "No news available in this category"}
                   </p>
                   <Button 
-                    onClick={handleUpload}
-                    className="bg-primary text-white hover:bg-primary/90"
+                    onClick={() => {
+                      setSearchTerm("");
+                      setActiveCategory("all");
+                    }}
+                    className="bg-blue-500 text-white hover:bg-blue-600"
                   >
-                    Upload your first document
+                    <span className="material-icons mr-2 text-sm">refresh</span>
+                    Reset Filters
                   </Button>
                 </div>
               )}
@@ -325,72 +329,40 @@ const Documents = () => {
         </div>
       </div>
 
-      {/* Share Dialog */}
-      <Dialog open={openShareDialog} onOpenChange={setOpenShareDialog}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Share Document</DialogTitle>
-            <DialogDescription>
-              Select users to share this document with
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleShare}>
-            <div className="grid gap-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="users">Share with:</Label>
-                <Select 
-                  onValueChange={(value) => setSelectedUsers([...selectedUsers, Number(value)])}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select users" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {users?.map((user) => (
-                      <SelectItem key={user.id} value={user.id.toString()}>
-                        {user.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                
-                {selectedUsers.length > 0 && (
-                  <div className="mt-4">
-                    <Label>Selected users:</Label>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {selectedUsers.map((userId) => {
-                        const user = users?.find(u => u.id === userId);
-                        return user ? (
-                          <div key={userId} className="flex items-center bg-gray-100 rounded-full px-3 py-1">
-                            <span className="text-sm">{user.name}</span>
-                            <button 
-                              type="button"
-                              className="ml-2"
-                              onClick={() => setSelectedUsers(selectedUsers.filter(id => id !== userId))}
-                            >
-                              <span className="material-icons text-gray-500 text-sm">close</span>
-                            </button>
-                          </div>
-                        ) : null;
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-            <DialogFooter>
-              <Button 
-                type="submit" 
-                className="bg-primary text-white"
-                disabled={shareMutation.isPending || selectedUsers.length === 0}
+      {/* Quick Links Footer */}
+      <Card className="mt-8 bg-gradient-to-r from-blue-50 to-green-50 border-0">
+        <CardContent className="p-6">
+          <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
+            <span className="material-icons mr-2 text-blue-600">link</span>
+            Quick Access to Trusted Health News Sources
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {[
+              { name: "BBC Health", url: "https://www.bbc.com/news/health", icon: "public" },
+              { name: "Reuters Health", url: "https://www.reuters.com/business/healthcare-pharmaceuticals/", icon: "article" },
+              { name: "CNN Health", url: "https://www.cnn.com/health", icon: "tv" },
+              { name: "Nature Medicine", url: "https://www.nature.com/nm/", icon: "science" },
+              { name: "Medical News Today", url: "https://www.medicalnewstoday.com/", icon: "medical_information" },
+              { name: "Healthcare IT News", url: "https://www.healthcareitnews.com/", icon: "computer" }
+            ].map((source, index) => (
+              <button
+                key={index}
+                onClick={() => handleNewsClick(source.url)}
+                className="flex flex-col items-center p-4 bg-white rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all duration-200 group"
               >
-                {shareMutation.isPending ? "Sharing..." : "Share Document"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+                <span className="material-icons text-2xl text-gray-600 group-hover:text-blue-600 mb-2">
+                  {source.icon}
+                </span>
+                <span className="text-xs font-medium text-gray-700 text-center">
+                  {source.name}
+                </span>
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
 
-export default Documents;
+export default HealthcareNews;

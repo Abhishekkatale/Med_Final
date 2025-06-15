@@ -124,10 +124,7 @@ const ProfileDetails = () => {
                 <p className="text-gray-600 dark:text-slate-400 mb-4">Seattle, Washington · 500+ connections</p>
 
                 <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
-                  <Button variant="default" size="sm" className="bg-primary text-white hover:bg-primary/90">
-                    <span className="material-icons text-sm mr-1">person_add</span>
-                    Connect
-                  </Button>
+                 
                   <Button variant="outline" size="sm">
                     <span className="material-icons text-sm mr-1">mail</span>
                     Message

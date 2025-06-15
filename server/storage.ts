@@ -133,7 +133,7 @@ export class MemStorage implements IStorage {
     const johnWilson = this.createUser({
       username: "johnwilson",
       password: "password", // Will be hashed by createUser
-      name: "Dr. John Wilson",
+      name: "Dr. Prakash Varma",
       title: "Cardiologist",
       organization: "Boston Medical Center",
       specialty: "Cardiology",

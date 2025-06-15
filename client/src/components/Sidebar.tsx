@@ -17,8 +17,8 @@ const Sidebar = ({ isOpen }: SidebarProps) => {
   const navLinks: SidebarLink[] = [
     { href: "/dashboard", label: "Dashboard", icon: "dashboard", active: location === "/" },
     { href: "/knowledge-hub", label: "Knowledge Hub", icon: "forum", active: location === "/knowledge-hub" },
-    { href: "/documents", label: "Documents", icon: "folder_shared", active: location === "/documents" },
-    { href: "/directory", label: "Directory", icon: "people", active: location === "/directory" },
+    { href: "/documents", label: "News", icon: "folder_shared", active: location === "/documents" },
+    { href: "/directory", label: "Network", icon: "people", active: location === "/directory" },
   ];
 
   return (
@@ -26,11 +26,13 @@ const Sidebar = ({ isOpen }: SidebarProps) => {
       <div className="flex flex-col h-full">
         {/* Logo */}
         <div className="px-6 py-6 flex items-center border-b border-border dark:border-slate-700">
-          <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center mr-3">
-            <span className="material-icons text-white text-sm">medical_services</span>
-          </div>
-          <span className="text-xl font-semibold text-primary">MedConnect</span>
-        </div>
+  <Link to="/dashboard" className="flex items-center">
+    <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center mr-3">
+      <span className="material-icons text-white text-sm">medical_services</span>
+    </div>
+    <span className="text-xl font-semibold text-primary">MedConnect</span>
+  </Link>
+</div>
         
         {/* Navigation items */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto custom-scrollbar">
@@ -52,7 +54,7 @@ const Sidebar = ({ isOpen }: SidebarProps) => {
         <div className="px-4 py-4 border-t border-border dark:border-slate-700">
           <div className="flex items-center">
             <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-medium">
-              <span>{currentUser?.initials || "JW"}</span>
+              <span>{currentUser?.initials || "PV"}</span>
             </div>
             <div className="ml-3">
               <p className="text-sm font-medium dark:text-white">{currentUser?.name || "Loading..."}</p>

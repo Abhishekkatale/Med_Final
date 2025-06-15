@@ -33,10 +33,10 @@ const AppShell = ({ children }: AppShellProps) => {
         setPageTitle("Knowledge Hub");
         break;
       case "/documents":
-        setPageTitle("Documents");
+        setPageTitle("News");
         break;
       case "/directory":
-        setPageTitle("Directory");
+        setPageTitle("Network");
         break;
       default:
         setPageTitle("Dashboard");
